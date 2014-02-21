@@ -1,7 +1,8 @@
 ---
 title: factory_girl
-translator: debbbbie
 source: https://github.com/thoughtbot/factory_girl/blob/master/GETTING_STARTED.md
+translator: debbbbie
+translated_at: 2014-02-22
 ---
 Getting Started
 ===============
@@ -9,28 +10,28 @@ Getting Started
 Update Your Gemfile
 -------------------
 
-If you're using Rails, you'll need to change the required version of `factory_girl_rails`:
+如果正在使用 Rails，你需要使用版本 `factory_girl_rails`：
 
 ```ruby
 gem "factory_girl_rails", "~> 4.0"
 ```
 
-If you're *not* using Rails, you'll just have to change the required version of `factory_girl`:
+如果*没有*使用 Rails，你需要使用版本 `factory_girl`：
 
 ```ruby
 gem "factory_girl", "~> 4.0"
 ```
 
-JRuby users: factory_girl works with JRuby starting with 1.6.7.2 (latest stable, as per July 2012).
-JRuby has to be used in 1.9 mode, for that, use JRUBY_OPTS environment variable:
+JRuby 用户： factory_girl 支持 JRuby 1.6.7.2 以上。
+JRuby 必须在 1.9 模式下工作，可以通过变量 JRUBY_OPTS：
 
 ```bash
 export JRUBY_OPTS=--1.9
 ```
 
-Once your Gemfile is updated, you'll want to update your bundle.
+更新完 Gemfile 以后，你或许需要 bundle update。
 
-Configure your test suite
+Configure your test suite : 配置你的测试套件
 -------------------------
 
 ```ruby
@@ -68,24 +69,43 @@ class MiniTest::Rails::ActiveSupport::TestCase
 end
 ```
 
-If you do not include `FactoryGirl::Syntax::Methods` in your test suite, then all factory_girl methods will need to be prefaced with `FactoryGirl`.
+如果没有把 `FactoryGirl::Syntax::Methods` 包含到测试套件中，那么所有的 factory_girl 方法都需要加上前缀 `FactoryGirl`。
 
 Linting Factories
 -----------------
 
-factory_girl allows for linting known factories:
+factory_girl 允许 linting 已知的 factories：
 
 ```ruby
 FactoryGirl.lint
 ```
+```ruby
+module FactoryGirl
+  def self.lint
+    invalid_factories = FactoryGirl.factories.select do |factory|
+      built_factory = FactoryGirl.build(factory.name)
 
-`FactoryGirl.lint` builds each factory and subsequently calls `#valid?` on it
-(if `#valid?` is defined); if any calls to `#valid?` return `false`,
-`FactoryGirl::InvalidFactoryError` is raised with a list of the offending
-factories. Recommended usage of `FactoryGirl.lint` is to invoke this once
-before the test suite is run.
+      if built_factory.respond_to?(:valid?)
+        !built_factory.valid?
+      end
+    end
 
-With RSpec:
+    if invalid_factories.any?
+      error_message = <<-ERROR_MESSAGE.strip
+The following factories are invalid:
+
+#{invalid_factories.map {|factory| "* #{factory.name}" }.join("\n")}
+      ERROR_MESSAGE
+
+      raise InvalidFactoryError, error_message
+    end
+  end
+end
+```
+
+`FactoryGirl.lint` 建立每个 factory 并随后调用其 `#valid?`；当任意一个 `#valid?` 的调用返回 `false`，会抛出
+带有这些恼人 factory 的异常 `FactoryGirl::InvalidFactoryError`。
+推荐在测试套件运行之前调用一次 `FactoryGirl.lint`。
 
 ```ruby
 # spec/support/factory_girl.rb
@@ -101,7 +121,7 @@ end
 Defining factories
 ------------------
 
-Each factory has a name and a set of attributes. The name is used to guess the class of the object by default, but it's possible to explicitly specify it:
+每个 factory 都有一个名字和一系列属性。名字用来猜测对象的默认类，也可以显性配置：
 
 ```ruby
 # This will guess the User class
@@ -121,12 +141,12 @@ FactoryGirl.define do
 end
 ```
 
-It is highly recommended that you have one factory for each class that provides the simplest set of attributes necessary to create an instance of that class. If you're creating ActiveRecord objects, that means that you should only provide attributes that are required through validations and that do not have defaults. Other factories can be created through inheritance to cover common scenarios for each class.
+强烈推荐每个类都配有一个 factory，提供最简单的属性以保证可以创建类的实例。如果创建的是 ActiveRecord 对象，你只需要创建需要验证及没有默认值的属性。
+其他 factories 可以通过继承创建已满足测试需要。
 
-Attempting to define multiple factories with the same name will raise an error.
+创建多个同样名字的 factory 会抛出异常。
 
-Factories can be defined anywhere, but will be automatically loaded if they
-are defined in files at the following locations:
+Factory可以定义在任何位置，但是如果定义在如下目录，将会被自动加载：
 
     test/factories.rb
     spec/factories.rb
@@ -136,31 +156,31 @@ are defined in files at the following locations:
 Using factories
 ---------------
 
-factory\_girl supports several different build strategies: build, create, attributes\_for and build\_stubbed:
+factory\_girl 提供多种创建策略：build, create, attributes\_for 和 build\_stubbed:
 
 ```ruby
-# Returns a User instance that's not saved
+# 没有保存的 User 对象
 user = build(:user)
 
-# Returns a saved User instance
+# 已经保存的 User 对象
 user = create(:user)
 
-# Returns a hash of attributes that can be used to build a User instance
+# 包含属性的 hash，可以创建User对象
 attrs = attributes_for(:user)
 
-# Returns an object with all defined attributes stubbed out
+# Returns an object with all defined attributes stubbed out无存根
 stub = build_stubbed(:user)
 
-# Passing a block to any of the methods above will yield the return object
+# 为以上方法传递代码块，该代码块会得到其创建的对象
 create(:user) do |user|
   user.posts.create(attributes_for(:post))
 end
 ```
 
-No matter which strategy is used, it's possible to override the defined attributes by passing a hash:
+不管用哪个策略，都可以通过传入 hash 定义对应属性：
 
 ```ruby
-# Build a User instance and override the first_name property
+# 创建 User 对象并覆盖属性
 user = build(:user, first_name: "Joe")
 user.first_name
 # => "Joe"
@@ -169,11 +189,7 @@ user.first_name
 Lazy Attributes
 ---------------
 
-Most factory attributes can be added using static values that are evaluated when
-the factory is defined, but some attributes (such as associations and other
-attributes that must be dynamically generated) will need values assigned each
-time an instance is generated. These "lazy" attributes can be added by passing a
-block instead of a parameter:
+大多工厂的属性用静态值就可以了，但有的属性（比如 associations 等等）只在每次运行的时候才能确定。很简单，传入一个代码块就可以了：
 
 ```ruby
 factory :user do
