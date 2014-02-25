@@ -202,7 +202,7 @@ end
 Aliases
 -------
 
-Aliases allow you to use named associations more easily.
+Aliases可以让你的 named associations 更加轻松。
 
 ```ruby
 factory :user, aliases: [:author, :commenter] do
@@ -227,7 +227,7 @@ factory :comment do
 end
 ```
 
-Dependent Attributes
+属性依赖 Dependent Attributes
 --------------------
 
 Attributes can be based on the values of other attributes using the evaluator that is yielded to lazy attribute blocks:
@@ -243,7 +243,7 @@ create(:user, last_name: "Doe").email
 # => "joe.doe@example.com"
 ```
 
-Transient Attributes
+瞬时属性（变换不定）　Transient Attributes
 --------------------
 
 There may be times where your code can be DRYed up by passing in transient attributes to factories.
@@ -267,9 +267,9 @@ create(:user, upcased: true).name
 #=> "JOHN DOE - ROCKSTAR"
 ```
 
-Static and dynamic attributes can be ignored. Ignored attributes will be ignored
+静态或动态属性可以忽略掉，忽略的属性不用在model中设置（Ignored attributes will be ignored
 within attributes\_for and won't be set on the model, even if the attribute
-exists or you attempt to override it.
+exists or you attempt to override it.）
 
 Within factory_girl's dynamic attributes, you can access ignored attributes as
 you would expect. If you need to access the evaluator in a factory_girl callback,
